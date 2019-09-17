@@ -1,19 +1,21 @@
 package engine;
 
+import sample.Model;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class Queen extends Piece {
 
-    public Queen(Alliance alliance) {
-        super(alliance, PieceType.QUEEN);
+    public Queen(Alliance alliance,int x,int y) {
+        super(alliance, PieceType.QUEEN,x,y);
     }
 
 
     @Override
-    public Collection<Move> calculateLegalMoves(Board board, int x, int y) {
+    public Collection<Move> calculateLegalMoves(Model model, boolean withCastling) {
         final ArrayList<Move> legalMoves = new ArrayList<>();
-        Tile[][] tiles = board.getTiles();
+        Tile[][] tiles = model.board.getTiles();
         Tile tile = tiles[x][y];
         int i, j;
         i=x+1;

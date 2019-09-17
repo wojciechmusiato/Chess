@@ -1,21 +1,21 @@
 package engine;
 
+import sample.Model;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class Knight extends Piece {
-    public Knight(Alliance alliance) {
-        super(alliance, PieceType.KNIGHT);
+    public Knight(Alliance alliance,int x,int y) {
+        super(alliance, PieceType.KNIGHT,x,y);
 
     }
 
 
     @Override
-    public Collection<Move> calculateLegalMoves(Board board, int x, int y) {
-        System.out.println("Koń");
+    public Collection<Move> calculateLegalMoves(Model model, boolean withCastling) {
         final ArrayList<Move> legalMoves = new ArrayList<>();
-        Tile[][] tiles = board.getTiles();
+        Tile[][] tiles = model.board.getTiles();
         Tile tile = tiles[x][y];
         int i, j;
         i = x;

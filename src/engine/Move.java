@@ -1,6 +1,6 @@
 package engine;
 
-public class Move {
+public abstract class Move {
     private Tile destination;
     private Tile source;
     private boolean capture;

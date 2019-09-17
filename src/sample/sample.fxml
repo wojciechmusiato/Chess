@@ -185,10 +185,12 @@
     <AnchorPane    GridPane.columnIndex="1"
                  GridPane.rowIndex="0">
 
-        <Button text = "New Game" prefHeight="20" prefWidth="100" />
-    </AnchorPane>
+        <Button text = "New Game" prefHeight="20" prefWidth="100" fx:id="newGameButton" onAction="#gameResetEvent"/>    </AnchorPane>
     <HBox    GridPane.columnIndex="0" GridPane.rowIndex="1">
         <Label text="text" fx:id="turnText" />
-        <Button text = "New Game" prefHeight="20" prefWidth="100" fx:id="newGameButton" onAction="#gameResetEvent"/>
+        <Label text="" fx:id="whiteCheckText" textFill="#FF0000"/>
+        <Label text="" fx:id="blackCheckText" textFill="#FF0000"/>
+
+
     </HBox>
 </GridPane>

@@ -8,6 +8,7 @@ public  class Tile {
         this.x = x;
         this.y = y;
         this.isOccupied= isOccupied;
+
     }
 
 

@@ -33,6 +33,10 @@ public class Controller implements Initializable {
     @FXML
     private Label turnText;
     @FXML
+    private Label whiteCheckText;
+    @FXML
+    private Label blackCheckText;
+    @FXML
     Button newGameButton;
 
     public Controller(Model model) {
@@ -85,15 +89,14 @@ public class Controller implements Initializable {
     }
 
     EventHandler<MouseEvent> mouseClickedEventHandler = e -> {
-        System.out.println("BARK");
+        //System.out.println("clicked piece");
         int x = (int) e.getSceneX() / 50;
         int y = (int) e.getSceneY() / 50;
         Alliance pieceAlliance = model.board.getTiles()[y][x].getPiece().getAllianceType();
         Rectangle r = ((Rectangle) getNodeFromGridPane(x, y));
         int i;
-
-        if (!isSelected && currentPlayer.alliance == Alliance.WHITE && pieceAlliance == Alliance.WHITE ||
-                currentPlayer.alliance == Alliance.BLACK && pieceAlliance == Alliance.BLACK) {
+        if (!isSelected && (currentPlayer.alliance == Alliance.WHITE && pieceAlliance == Alliance.WHITE ||
+                currentPlayer.alliance == Alliance.BLACK && pieceAlliance == Alliance.BLACK)) {
             r.setFill(Color.ORANGE);
             isSelected = true;
             selectedPiece = (ImageView) e.getSource();
@@ -107,10 +110,12 @@ public class Controller implements Initializable {
             if (!moves.isEmpty()) {
                 System.out.println("im selected");
                 for (i = 0; i < moves.size(); i++) {
-                    if (moves.get(i).getDestTile().x == y && moves.get(i).getDestTile().y == x){
+                    if (moves.get(i).getDestTile().x == y && moves.get(i).getDestTile().y == x) {
                         makeMove(x, y);
-                    System.out.println("making move  nad unselecting");
-                    unselect(); return;}
+                        System.out.println("making move  nad unselecting");
+                        unselect();
+                        return;
+                    }
                 }
             }
 
@@ -134,21 +139,67 @@ public class Controller implements Initializable {
                     chessPane.getChildren().remove(selectedPiece);
                     chessPane.add(selectedPiece, x, y);
                     model.board.makeMove(moves.get(i).getSourceTile(), moves.get(i).getDestTile());
+                    if(moves.get(i) instanceof CastlingMove){
+                        selectedPiece = pieces.get(((CastlingMove) moves.get(i)).rookSourceMove.getPiece());
+                        chessPane.getChildren().remove(selectedPiece);
+                        System.out.println(selectedPiece);
+                        System.out.println(((CastlingMove) moves.get(i)).rookDestMove.x);
+                        System.out.println(((CastlingMove) moves.get(i)).rookDestMove.y);
+                        chessPane.add(selectedPiece, ((CastlingMove) moves.get(i)).rookDestMove.y,((CastlingMove) moves.get(i)).rookDestMove.x);
+                        model.board.makeMove(((CastlingMove) moves.get(i)).rookSourceMove, ((CastlingMove) moves.get(i)).rookDestMove);
+                    }
                 }
             }
         }
-        if (model.isPawnFirstMoved(y, x)) model.setPawnFirstMoved(y, x);
+        if (model.isFirstMoved(y, x, Piece.PieceType.PAWN)) model.setFirstMoved(y, x);
+        if (model.isFirstMoved(y, x, Piece.PieceType.KING)) model.setFirstMoved(y, x);
+        if (model.isFirstMoved(y, x, Piece.PieceType.ROOK)) model.setFirstMoved(y, x);
+        if(model.checkForPromotion(y,x)){
+            chessPane.getChildren().remove(pieces.get(model.board.getTiles()[y][x].getPiece()));
+            pieces.remove(model.board.getTiles()[y][x].getPiece());
+            if(model.getCurrentPlayer().alliance==Alliance.WHITE) {
+                model.board.getTiles()[y][x].setPiece(new Queen(Alliance.WHITE,y,x));
+                pieces.put(model.board.getTiles()[y][x].getPiece(), new ImageView(new Image(getClass().getResourceAsStream("images/WQ.png"), 50, 50, false, false)));
+            }else{
+                model.board.getTiles()[y][x].setPiece(new Queen(Alliance.BLACK,y,x));
+                pieces.put(model.board.getTiles()[y][x].getPiece(), new ImageView(new Image(getClass().getResourceAsStream("images/BQ.png"), 50, 50, false, false)));
+            }
+            chessPane.add(pieces.get(model.board.getTiles()[y][x].getPiece()), x,y);
+            pieces.get(model.board.getTiles()[y][x].getPiece()).setOnMouseClicked(mouseClickedEventHandler);
+            model.updatePlayerPieces(y,x);
+        }
         model.incrementCounter();
-        currentPlayer = model.getCurrentPlayer();
         moves.clear();
+        currentPlayer = model.getCurrentPlayer();
+        if (model.isInCheck(model.whitePlayer)) {
+            whiteCheckText.setText("White player CHECK");
+
+        } else {
+            whiteCheckText.setText("");
+        }
+        if (model.isInCheck(model.blackPlayer)) {
+            blackCheckText.setText("Black player CHECK");
+        } else {
+            blackCheckText.setText("");
+
+        }
+
         turnText.setText(currentPlayer.alliance + "PLAYER TURN");
     }
 
     private void select(Move move) {
+
         isSelected = true;
         int y = move.getDestTile().x;
         int x = move.getDestTile().y;
+
         ((Rectangle) getNodeFromGridPane(x, y)).setFill(Color.ORANGE);
+        if(move instanceof  CastlingMove){
+            y = ((CastlingMove)move).rookDestMove.x;
+            x = ((CastlingMove)move).rookDestMove.y;
+            ((Rectangle) getNodeFromGridPane(x, y)).setFill(Color.ORANGE);
+
+        }
     }
 
     @Override
@@ -161,6 +212,7 @@ public class Controller implements Initializable {
         currentPlayer = model.getCurrentPlayer();
         turnText.setText(currentPlayer.alliance + " PLAYER TURN");
     }
+
     @FXML
     private void gameResetEvent(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -173,9 +225,9 @@ public class Controller implements Initializable {
         ButtonType button = result.orElse(ButtonType.CANCEL);
         System.out.println("lol");
         if (button == okButton) {
-            int i,j;
-            for(i = 0 ; i < 8 ; i++){
-                for(j = 0 ; j < 8 ; j++){
+            int i, j;
+            for (i = 0; i < 8; i++) {
+                for (j = 0; j < 8; j++) {
                     chessPane.getChildren().remove(pieces.get(model.board.getTiles()[i][j].getPiece()));
                 }
             }
@@ -183,13 +235,13 @@ public class Controller implements Initializable {
             initPieces();
             currentPlayer = model.getCurrentPlayer();
             turnText.setText(currentPlayer.alliance + " PLAYER TURN");
-        } else if(button == noButton) {
+        } else if (button == noButton) {
             System.out.println("canceled");
         }
 
 
-
     }
+
     private Node getNodeFromGridPane(int col, int row) {
         for (Node node : chessPane.getChildren()) {
             if (GridPane.getColumnIndex(node) == col && GridPane.getRowIndex(node) == row) {
@@ -198,7 +250,8 @@ public class Controller implements Initializable {
         }
         return null;
     }
-    public void initPieces(){
+
+    public void initPieces() {
         pieces = new HashMap<Piece, ImageView>();
         Tile[][] t = model.board.getTiles();
         int i;

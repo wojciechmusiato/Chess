@@ -1,24 +1,23 @@
 package engine;
 
+import sample.Model;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class Bishop extends Piece {
-    public Bishop(Alliance alliance) {
-        super(alliance, PieceType.BISHOP);
+    public Bishop(Alliance alliance,int x,int y) {
+        super(alliance, PieceType.BISHOP,x,y);
 
     }
 
 
     @Override
-    public Collection<Move> calculateLegalMoves(Board board, int x, int y) {
+    public Collection<Move> calculateLegalMoves(Model model, boolean withCastling) {
 
-        System.out.println("Entered rook");
         final ArrayList<Move> legalMoves = new ArrayList<>();
-        Tile[][] tiles = board.getTiles();
+        Tile[][] tiles = model.board.getTiles();
         Tile tile = tiles[x][y];
-        System.out.println("My tile: " + x + " " + y);
         int i, j;
         i = x + 1;
         j = y + 1;
